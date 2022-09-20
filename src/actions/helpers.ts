@@ -54,3 +54,55 @@ export async function cloneRepo({
     ref: branch,
   });
 }
+
+export async function commitAndPushRepo({
+  dir,
+  auth,
+  logger,
+  remote = "origin",
+  commitMessage,
+  gitAuthorInfo,
+  branch = "main",
+}: {
+  dir: string;
+  auth: { username: string; password: string } | { token: string };
+  logger: Logger;
+  remote?: string;
+  commitMessage: string;
+  gitAuthorInfo?: { name?: string; email?: string };
+  branch?: string;
+}): Promise<void> {
+  const git = Git.fromAuth({
+    ...auth,
+    logger,
+  });
+
+  await git.checkout({
+    dir,
+    ref: branch,
+  });
+
+  await git.add({
+    dir,
+    filepath: ".",
+  });
+
+  // use provided info if possible, otherwise use fallbacks
+  const authorInfo = {
+    name: gitAuthorInfo?.name ?? "Scaffolder",
+    email: gitAuthorInfo?.email ?? "scaffolder@backstage.io",
+  };
+
+  await git.commit({
+    dir,
+    message: commitMessage,
+    author: authorInfo,
+    committer: authorInfo,
+  });
+
+  await git.push({
+    dir,
+    remote: remote,
+    remoteRef: `refs/heads/${branch}`,
+  });
+}
