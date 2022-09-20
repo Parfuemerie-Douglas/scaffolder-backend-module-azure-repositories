@@ -5,6 +5,7 @@ Welcome to the Microsoft Azure repository actions for the `scaffolder-backend`.
 This plugin contains a collection of actions:
 
 - `azure:repo:clone`
+- `azure:repo:push`
 
 ## Getting started
 
@@ -32,14 +33,30 @@ to see all options):
 ```typescript
 // packages/backend/src/plugins/scaffolder.ts
 
+import { CatalogClient } from '@backstage/catalog-client';
 import { ScmIntegrations } from "@backstage/integration";
 
-import { cloneAzureRepoAction } from "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories";
+import {
+  cloneAzureRepoAction,
+  pushAzureRepoAction
+} from "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories";
+
+import { Router } from 'express';
+
+import type { PluginEnvironment } from '../types';
+
+export default async function createPlugin(
+  env: PluginEnvironment,
+): Promise<Router> {
+  const catalogClient = new CatalogClient({
+    discoveryApi: env.discovery,
+  });
 
 const integrations = ScmIntegrations.fromConfig(env.config);
 
 const actions = [
   cloneAzureRepoAction({ integrations }),
+  pushAzureRepoAction({ integrations, config: env.config }),
   ...createBuiltInActions({
     containerRunner,
     catalogClient,
@@ -63,7 +80,9 @@ return await createRouter({
 The Azure repository actions use an [Azure PAT (personal access
 token)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate)
 for authorization. The PAT requires `Read` permission for `Code` for the
-`azure:repo:clone` action. Simply add the PAT to your `app-config.yaml`:
+`azure:repo:clone` action. For the `azure:repo:push` action the PAT requires
+`Read & write` permission for `Code`. Simply add the PAT to your
+`app-config.yaml`:
 
 ```yaml
 # app-config.yaml
@@ -134,7 +153,34 @@ spec:
         values:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}
+
+    - id: push-terraform-master
+      name: Push Terraform Master Skeleton
+      action: azure:repo:push
+      input:
+        branch: "main"
+        sourcePath: ./sub-directory
+        gitCommitMessage: Add ${{ parameters.name }} project files
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: "dev.azure.com?owner=<MY_AZURE_PROJECT>&repo=<MY_AZURE_REPOSITORY>&organization=<MY_AZURE_ORGANIZATION>"
+        catalogInfoPath: "/catalog-info.yaml"
+
+  output:
+    links:
+      - title: Repository
+        url: "dev.azure.com?owner=<MY_AZURE_PROJECT>&repo=<MY_AZURE_REPOSITORY>&organization=<MY_AZURE_ORGANIZATION>"
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
 ```
+
+Replace `<MY_AZURE_ORGANIZATION>` with the name of your Azure DevOps
+organization, `<MY_AZURE_PROJECT>` with the name of your Azure DevOps project,
+and `<MY_AZURE_REPOSITORY>` with the name of your Azure DevOps repository.
 
 You can find a list of all registred actions including their parameters at the
 `/create/actions` route in your Backstage application.
