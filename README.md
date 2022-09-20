@@ -154,8 +154,8 @@ spec:
           name: ${{ parameters.name }}
           owner: ${{ parameters.owner }}
 
-    - id: push-terraform-master
-      name: Push Terraform Master Skeleton
+    - id: pushAzureRepo
+      name: Push to Remote Azure Repo
       action: azure:repo:push
       input:
         branch: "main"
