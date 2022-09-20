@@ -20,4 +20,4 @@ metadata:
 spec:
   type: library
   owner: parfuemerie-douglas
-  lifecycle: development
+  lifecycle: production
