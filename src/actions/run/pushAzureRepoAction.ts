@@ -102,6 +102,10 @@ export const pushAzureRepoAction = (options: {
         throw new InputError(`No token provided for Azure Integration ${host}`);
       }
 
+      if (ctx.input.branch === "main") {
+        throw new InputError(`Main branch is illegal to push to`);
+      }
+
       const token = ctx.input.token ?? integrationConfig.config.token!;
 
       const gitAuthorInfo = {
