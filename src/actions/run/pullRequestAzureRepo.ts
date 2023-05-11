@@ -54,7 +54,6 @@ export const pullRequestAzureRepoAction = (options: {
                 type: 'string',
                 description: "The branch to merge into (default: main).",
               },
-                type: 'string',
               title: {
                 title: 'Title',
                 description: 'The title of the pull request.',
@@ -63,6 +62,7 @@ export const pullRequestAzureRepoAction = (options: {
               repoId: {
                 title: 'Remote Repo ID',
                 description: 'Repo ID of the pull request.',
+                type: 'string',
               },
               project: {
                 title: 'ADO Project',
