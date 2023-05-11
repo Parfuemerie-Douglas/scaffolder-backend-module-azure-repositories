@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories.git"
+    "url": "git+https://github.com/fosterm-mw/scaffolder-backend-module-azure-repositories.git"
   },
   "keywords": [
     "backstage",
@@ -35,9 +35,9 @@
   "author": "Parfümerie Douglas GmbH",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories/issues"
+    "url": "https://github.com/fosterm-mw/scaffolder-backend-module-azure-repositories/issues"
   },
-  "homepage": "https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories#readme",
+  "homepage": "https://github.com/fosterm-mw/scaffolder-backend-module-azure-repositories#readme",
   "dependencies": {
     "@backstage/backend-common": "^0.15.2-next.0",
     "@backstage/config": "^1.0.3-next.0",
