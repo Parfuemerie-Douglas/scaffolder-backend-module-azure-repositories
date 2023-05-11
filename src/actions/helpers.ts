@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import { Git } from "@backstage/backend-common";
-
 import { Logger } from "winston";
+import * as azdev from "azure-devops-node-api";
+import * as GitApi from "azure-devops-node-api/GitApi";
+import * as GitInterfaces from "azure-devops-node-api/interfaces/GitInterfaces";
 
 export async function cloneRepo({
   dir,
@@ -26,7 +27,7 @@ export async function cloneRepo({
   remoteUrl,
   branch = "main",
 }: {
-  dir: string;
+  dir: string,
   auth: { username: string; password: string } | { token: string };
   logger: Logger;
   remote?: string;
@@ -55,14 +56,14 @@ export async function cloneRepo({
   });
 }
 
-export async function commitAndPushRepo({
+export async function commitAndPushBranch({
   dir,
   auth,
   logger,
   remote = "origin",
   commitMessage,
   gitAuthorInfo,
-  branch = "main",
+  branch = "scaffolder",
 }: {
   dir: string;
   auth: { username: string; password: string } | { token: string };
@@ -72,10 +73,20 @@ export async function commitAndPushRepo({
   gitAuthorInfo?: { name?: string; email?: string };
   branch?: string;
 }): Promise<void> {
+  const authorInfo = {
+    name: gitAuthorInfo?.name ?? "Scaffolder",
+    email: gitAuthorInfo?.email ?? "scaffolder@backstage.io",
+  };
+
   const git = Git.fromAuth({
     ...auth,
     logger,
   });
+
+  await git.branch({
+    dir,
+    ref: branch,
+  })
 
   await git.checkout({
     dir,
@@ -87,12 +98,6 @@ export async function commitAndPushRepo({
     filepath: ".",
   });
 
-  // use provided info if possible, otherwise use fallbacks
-  const authorInfo = {
-    name: gitAuthorInfo?.name ?? "Scaffolder",
-    email: gitAuthorInfo?.email ?? "scaffolder@backstage.io",
-  };
-
   await git.commit({
     dir,
     message: commitMessage,
@@ -101,8 +106,33 @@ export async function commitAndPushRepo({
   });
 
   await git.push({
-    dir,
-    remote: remote,
-    remoteRef: `refs/heads/${branch}`,
-  });
+   dir,
+   remote: remote,
+   remoteRef: `refs/heads/${branch}`,
+  })
+}
+
+export async function createADOPullRequest({
+  gitPullRequestToCreate,
+  auth,
+  repoId,
+  project,
+  supportsIterations,
+}:{
+  gitPullRequestToCreate: GitInterfaces.GitPullRequest;
+  auth: { org: string; token: string };
+  repoId: string;
+  project?: string;
+  supportsIterations?: boolean;
+}): Promise<void> {
+  const url = "https://dev.azure.com/";
+  const orgUrl = url + auth.org;
+  const token: string = auth.token; // process.env.AZURE_TOKEN || "";
+
+  const authHandler = azdev.getPersonalAccessTokenHandler(token);
+  const connection = new azdev.WebApi(orgUrl, authHandler);
+
+  const gitApiObject: GitApi.IGitApi = await connection.getGitApi();
+
+  await gitApiObject.createPullRequest( gitPullRequestToCreate, repoId, project, supportsIterations );
 }
