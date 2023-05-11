@@ -1,5 +1,5 @@
 {
-  "name": "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories",
+  "name": "@fostemi/scaffolder-backend-module-azure-repositories",
   "version": "0.2.3-next.0",
   "description": "A collection of Backstage scaffolder backend modules for Azure repositories.",
   "main": "dist/index.cjs.js",
