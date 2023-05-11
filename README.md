@@ -59,7 +59,7 @@ const integrations = ScmIntegrations.fromConfig(env.config);
 const actions = [
   cloneAzureRepoAction({ integrations }),
   pushAzureRepoAction({ integrations, config: env.config }),
-  pullRequestAzureRepoAction({ integrations, config: env.config }),
+  pullRequestAzureRepoAction({ integrations }),
   ...createBuiltInActions({
     containerRunner,
     catalogClient,
