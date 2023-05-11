@@ -127,7 +127,7 @@ export async function createADOPullRequest({
 }): Promise<void> {
   const url = "https://dev.azure.com/";
   const orgUrl = url + auth.org;
-  const token: string = auth.token; // process.env.AZURE_TOKEN || "";
+  const token: string = auth.token || ""; // process.env.AZURE_TOKEN || "";
 
   const authHandler = azdev.getPersonalAccessTokenHandler(token);
   const connection = new azdev.WebApi(orgUrl, authHandler);

@@ -54,15 +54,15 @@ export const pullRequestAzureRepoAction = (options: {
                 type: 'string',
                 description: "The branch to merge into (default: main).",
               },
-              repoId: {
-                title: 'Remote Repo ID',
-                description: 'Repo ID of the pull request.',
                 type: 'string',
-              },
               title: {
                 title: 'Title',
                 description: 'The title of the pull request.',
                 type: 'string',
+              },
+              repoId: {
+                title: 'Remote Repo ID',
+                description: 'Repo ID of the pull request.',
               },
               project: {
                 title: 'ADO Project',
@@ -114,7 +114,7 @@ export const pullRequestAzureRepoAction = (options: {
 
       await createADOPullRequest({
         gitPullRequestToCreate: pullRequest,
-        auth: { org, token },
+        auth: { org: org, token: token },
         repoId: repoId,
         project: project,
         supportsIterations: supportsIterations,
