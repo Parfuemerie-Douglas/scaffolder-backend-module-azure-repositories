@@ -1,5 +1,5 @@
 import {ScmIntegrationRegistry} from "@backstage/integration";
-import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
+import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 import {InputError} from "@backstage/errors";
 import { createADOPullRequest} from "../helpers";
 import * as GitInterfaces from "azure-devops-node-api/interfaces/GitInterfaces";
