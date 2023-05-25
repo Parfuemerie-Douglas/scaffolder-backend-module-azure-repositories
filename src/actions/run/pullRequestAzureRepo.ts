@@ -32,57 +32,51 @@ export const pullRequestAzureRepoAction = (options: {
     description: 'Create a PR to a repository in Azure DevOps.',
     schema: {
       input: {
-        required: [],
         type: 'object',
+        required: ['repoId', 'title'],
         properties: {
-          input: {
-            type: 'object',
-            required: ['repoId', 'title'],
-            properties: {
-              organization: {
-                title: 'Organization Name',
-                type: 'string',
-                description: 'The name of the organization in Azure DevOps.',
-              },
-              sourceBranch: {
-                title: 'Source Branch',
-                type: 'string',
-                description: 'The branch to merge into the source.',
-              },
-              targetBranch: {
-                title: 'Target Branch',
-                type: 'string',
-                description: "The branch to merge into (default: main).",
-              },
-              title: {
-                title: 'Title',
-                description: 'The title of the pull request.',
-                type: 'string',
-              },
-              repoId: {
-                title: 'Remote Repo ID',
-                description: 'Repo ID of the pull request.',
-                type: 'string',
-              },
-              project: {
-                title: 'ADO Project',
-                description: 'The Project in Azure DevOps.',
-                type: 'string',
-              },
-              supportsIterations: {
-                title: 'Supports Iterations',
-                description: 'Whether or not the PR supports interations.',
-                type: 'boolean',
-              },
-              token: {
-                title: 'Authenticatino Token',
-                type: 'string',
-                description: 'The token to use for authorization.',
-              },
-            }
+          organization: {
+            title: 'Organization Name',
+            type: 'string',
+            description: 'The name of the organization in Azure DevOps.',
           },
-        },
-      },
+          sourceBranch: {
+            title: 'Source Branch',
+            type: 'string',
+            description: 'The branch to merge into the source.',
+          },
+          targetBranch: {
+            title: 'Target Branch',
+            type: 'string',
+            description: "The branch to merge into (default: main).",
+          },
+          title: {
+            title: 'Title',
+            description: 'The title of the pull request.',
+            type: 'string',
+          },
+          repoId: {
+            title: 'Remote Repo ID',
+            description: 'Repo ID of the pull request.',
+            type: 'string',
+          },
+          project: {
+            title: 'ADO Project',
+            description: 'The Project in Azure DevOps.',
+            type: 'string',
+          },
+          supportsIterations: {
+            title: 'Supports Iterations',
+            description: 'Whether or not the PR supports interations.',
+            type: 'boolean',
+          },
+          token: {
+            title: 'Authenticatino Token',
+            type: 'string',
+            description: 'The token to use for authorization.',
+          },
+        }
+      }
     },
     async handler(ctx) {
       const { title, repoId, project, supportsIterations } = ctx.input;
@@ -122,4 +116,3 @@ export const pullRequestAzureRepoAction = (options: {
     },
   });
 };
-
