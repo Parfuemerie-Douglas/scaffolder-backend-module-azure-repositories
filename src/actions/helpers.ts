@@ -27,7 +27,7 @@ export async function cloneRepo({
   remoteUrl,
   branch = "main",
 }: {
-  dir: string,
+  dir: string;
   auth: { username: string; password: string } | { token: string };
   logger: Logger;
   remote?: string;
@@ -109,7 +109,7 @@ export async function commitAndPushBranch({
    dir,
    remote: remote,
    remoteRef: `refs/heads/${branch}`,
-  })
+  });
 }
 
 export async function createADOPullRequest({

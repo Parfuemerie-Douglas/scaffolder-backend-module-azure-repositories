@@ -11,7 +11,7 @@ This plugin contains a collection of actions:
 ## Getting started
 
 Create your Backstage application using the Backstage CLI as described here:
-<https://backstage.io/docs/getting-started/create-an-app>.
+[https://backstage.io/docs/getting-started/create-an-app](https://backstage.io/docs/getting-started/create-an-app).
 
 > Note: If you are using this plugin in a Backstage monorepo that contains the
 > code for `@backstage/plugin-scaffolder-backend`, you need to modify your
@@ -24,7 +24,7 @@ You need to configure the actions in your backend:
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @fostemi/scaffolder-backend-module-azure-repositories
+yarn add --cwd packages/backend @parfuemerie-douglas/scaffolder-backend-module-azure-repositories
 ```
 
 Configure the actions (you can check the
@@ -41,7 +41,7 @@ import {
   cloneAzureRepoAction,
   pushAzureRepoAction,
   pullRequestAzureRepoAction,
-} from "@fostemi/scaffolder-backend-module-azure-repositories";
+} from "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories";
 
 import { Router } from 'express';
 
@@ -196,6 +196,8 @@ Replace `<MY_AZURE_ORGANIZATION>` with the name of your Azure DevOps
 organization, `<MY_AZURE_PROJECT>` with the name of your Azure DevOps project,
 `<MY_AZURE_REPOSITORY_BRANCH` with the name of the desired Azure DevOps repository branch,
 and `<MY_AZURE_REPOSITORY>` with the name of your Azure DevOps repository.
+
+NOTE: You will not be able to register the Pull Request since the file will not exist from the main branch!
 
 You can find a list of all registred actions including their parameters at the
 `/create/actions` route in your Backstage application.
