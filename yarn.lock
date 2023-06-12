@@ -2525,7 +2525,7 @@
     zod "^3.21.4"
     zod-to-json-schema "^3.20.4"
 
-"@backstage/plugin-scaffolder-backend@^1.12.0":
+"@backstage/plugin-scaffolder-backend@^1.13.1":
   version "1.14.0"
   resolved "https://registry.yarnpkg.com/@backstage/plugin-scaffolder-backend/-/plugin-scaffolder-backend-1.14.0.tgz#3eed585d361c8ab1a42d21f98507eacb44017775"
   integrity sha512-1ADlUXUKvz987Y58J8la5Y00RtDb/e3UmRAOddaGwFBtsN9AMrDDKMCW7xUOHn7kf399ka6DtPId60jEsjAQgQ==
