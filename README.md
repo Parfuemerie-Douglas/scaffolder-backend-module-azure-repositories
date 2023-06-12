@@ -6,11 +6,12 @@ This plugin contains a collection of actions:
 
 - `azure:repo:clone`
 - `azure:repo:push`
+- `azure:repo:pr`
 
 ## Getting started
 
 Create your Backstage application using the Backstage CLI as described here:
-<https://backstage.io/docs/getting-started/create-an-app>.
+[https://backstage.io/docs/getting-started/create-an-app](https://backstage.io/docs/getting-started/create-an-app).
 
 > Note: If you are using this plugin in a Backstage monorepo that contains the
 > code for `@backstage/plugin-scaffolder-backend`, you need to modify your
@@ -38,7 +39,8 @@ import { ScmIntegrations } from "@backstage/integration";
 
 import {
   cloneAzureRepoAction,
-  pushAzureRepoAction
+  pushAzureRepoAction,
+  pullRequestAzureRepoAction,
 } from "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories";
 
 import { Router } from 'express';
@@ -57,6 +59,7 @@ const integrations = ScmIntegrations.fromConfig(env.config);
 const actions = [
   cloneAzureRepoAction({ integrations }),
   pushAzureRepoAction({ integrations, config: env.config }),
+  pullRequestAzureRepoAction({ integrations }),
   ...createBuiltInActions({
     containerRunner,
     catalogClient,
@@ -158,15 +161,26 @@ spec:
       name: Push to Remote Azure Repo
       action: azure:repo:push
       input:
-        branch: "main"
+        branch: <MY_AZURE_REPOSITORY_BRANCH>
         sourcePath: ./sub-directory
         gitCommitMessage: Add ${{ parameters.name }} project files
+
+    - id: pullRequestAzureRepo
+      name: Create a Pull Request to Azure Repo
+      action: azure:repo:pr
+      input:
+        sourceBranch: <MY_AZURE_REPOSITORY_BRANCH>
+        targetBranch: "main"
+        repoId: <MY_AZURE_REPOSITORY>
+        title: ${{ parameters.name }}
+        project: <MY_AZURE_PROJECT>
+        supportsIterations: false
 
     - id: register
       name: Register
       action: catalog:register
       input:
-        repoContentsUrl: "dev.azure.com?owner=<MY_AZURE_PROJECT>&repo=<MY_AZURE_REPOSITORY>&organization=<MY_AZURE_ORGANIZATION>"
+        repoContentsUrl: "dev.azure.com?owner=<MY_AZURE_PROJECT>&repo=<MY_AZURE_REPOSITORY>&organization=<MY_AZURE_ORGANIZATION>&version=<MY_AZURE_REPOSITORY_BRANCH>"
         catalogInfoPath: "/catalog-info.yaml"
 
   output:
@@ -180,7 +194,10 @@ spec:
 
 Replace `<MY_AZURE_ORGANIZATION>` with the name of your Azure DevOps
 organization, `<MY_AZURE_PROJECT>` with the name of your Azure DevOps project,
+`<MY_AZURE_REPOSITORY_BRANCH` with the name of the desired Azure DevOps repository branch,
 and `<MY_AZURE_REPOSITORY>` with the name of your Azure DevOps repository.
+
+NOTE: You will not be able to register the Pull Request since the file will not exist from the main branch!
 
 You can find a list of all registred actions including their parameters at the
 `/create/actions` route in your Backstage application.

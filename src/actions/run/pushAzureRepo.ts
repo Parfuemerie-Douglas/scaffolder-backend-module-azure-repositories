@@ -19,7 +19,7 @@ import { InputError } from "@backstage/errors";
 import { ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
-import { commitAndPushRepo } from "../helpers";
+import { commitAndPushBranch } from "../helpers";
 import { getRepoSourceDirectory } from "../util";
 
 export const pushAzureRepoAction = (options: {
@@ -113,7 +113,7 @@ export const pushAzureRepoAction = (options: {
           : config.getOptionalString("scaffolder.defaultAuthor.email"),
       };
 
-      await commitAndPushRepo({
+      await commitAndPushBranch({
         dir: sourcePath,
         auth: { username: "notempty", password: token },
         logger: ctx.logger,
