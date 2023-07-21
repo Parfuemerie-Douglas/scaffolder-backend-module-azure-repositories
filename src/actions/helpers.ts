@@ -83,15 +83,19 @@ export async function commitAndPushBranch({
     logger,
   });
 
-  await git.branch({
-    dir,
-    ref: branch,
-  })
+  const currentBranch = await git.currentBranch({dir})
 
-  await git.checkout({
-    dir,
-    ref: branch,
-  });
+  if (currentBranch !== branch) {
+    await git.branch({
+      dir,
+      ref: branch,
+    })
+  
+    await git.checkout({
+      dir,
+      ref: branch,
+    });
+  }
 
   await git.add({
     dir,
