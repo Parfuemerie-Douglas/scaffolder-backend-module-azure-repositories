@@ -26,6 +26,7 @@ export const pullRequestAzureRepoAction = (options: {
     repoId: string;
     project?: string;
     supportsIterations?: boolean;
+    server: string;
     token?: string;
   }>({
     id: 'azure:repo:pr',
@@ -70,6 +71,11 @@ export const pullRequestAzureRepoAction = (options: {
             description: 'Whether or not the PR supports interations.',
             type: 'boolean',
           },
+          server: {
+            type: "string",
+            title: "Server hostname",
+            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
+          },
           token: {
             title: 'Authenticatino Token',
             type: 'string',
@@ -79,12 +85,12 @@ export const pullRequestAzureRepoAction = (options: {
       }
     },
     async handler(ctx) {
-      const { title, repoId, project, supportsIterations } = ctx.input;
+      const { title, repoId, server, project, supportsIterations } = ctx.input;
 
       const sourceBranch = `refs/heads/${ctx.input.sourceBranch}` ?? `refs/heads/scaffolder`;
       const targetBranch = `refs/heads/${ctx.input.targetBranch}` ?? `refs/heads/main`;
 
-      const host = 'dev.azure.com';
+      const host = server ?? "dev.azure.com";
       const integrationConfig = integrations.azure.byHost(host);
 
       if (!integrationConfig) {
@@ -108,6 +114,7 @@ export const pullRequestAzureRepoAction = (options: {
 
       await createADOPullRequest({
         gitPullRequestToCreate: pullRequest,
+        server: server,
         auth: { org: org, token: token },
         repoId: repoId,
         project: project,

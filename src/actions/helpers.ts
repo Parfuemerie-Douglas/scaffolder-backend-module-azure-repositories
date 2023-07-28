@@ -118,18 +118,20 @@ export async function commitAndPushBranch({
 
 export async function createADOPullRequest({
   gitPullRequestToCreate,
+  server,
   auth,
   repoId,
   project,
   supportsIterations,
 }:{
   gitPullRequestToCreate: GitInterfaces.GitPullRequest;
+  server: string;
   auth: { org: string; token: string };
   repoId: string;
   project?: string;
   supportsIterations?: boolean;
 }): Promise<void> {
-  const url = "https://dev.azure.com/";
+  const url = `https://${server}/`;
   const orgUrl = url + auth.org;
   const token: string = auth.token || ""; // process.env.AZURE_TOKEN || "";
 
