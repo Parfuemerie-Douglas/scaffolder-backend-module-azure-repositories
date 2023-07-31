@@ -34,6 +34,7 @@ export const pushAzureRepoAction = (options: {
     gitCommitMessage?: string;
     gitAuthorName?: string;
     gitAuthorEmail?: string;
+    server: string;
     token?: string;
   }>({
     id: "azure:repo:push",
@@ -72,6 +73,11 @@ export const pushAzureRepoAction = (options: {
             type: "string",
             description: "Sets the default author email for the commit.",
           },
+          server: {
+            type: "string",
+            title: "Server hostname",
+            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
+          },
           token: {
             title: "Authenticatino Token",
             type: "string",
@@ -81,7 +87,7 @@ export const pushAzureRepoAction = (options: {
       },
     },
     async handler(ctx) {
-      const { branch, gitCommitMessage, gitAuthorName, gitAuthorEmail } =
+      const { branch, gitCommitMessage, gitAuthorName, gitAuthorEmail, server } =
         ctx.input;
 
       const sourcePath = getRepoSourceDirectory(
@@ -89,7 +95,7 @@ export const pushAzureRepoAction = (options: {
         ctx.input.sourcePath
       );
 
-      const host = "dev.azure.com";
+      const host = server ?? "dev.azure.com";
       const integrationConfig = integrations.azure.byHost(host);
 
       if (!integrationConfig) {

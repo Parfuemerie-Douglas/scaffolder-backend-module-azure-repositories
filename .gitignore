@@ -2,3 +2,4 @@ dist
 dist-types
 node_modules
 .idea
+*error.log
