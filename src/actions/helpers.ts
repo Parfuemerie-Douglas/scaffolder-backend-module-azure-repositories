@@ -18,6 +18,8 @@ import { Logger } from "winston";
 import * as azdev from "azure-devops-node-api";
 import * as GitApi from "azure-devops-node-api/GitApi";
 import * as GitInterfaces from "azure-devops-node-api/interfaces/GitInterfaces";
+import { AzureDevOpsCredentialsProvider } from "@backstage/integration";
+import { InputError } from "@backstage/errors";
 
 export async function cloneRepo({
   dir,
@@ -58,15 +60,15 @@ export async function cloneRepo({
 
 export async function commitAndPushBranch({
   dir,
-  auth,
+  credentialsProvider,
   logger,
-  remote = "origin",
+  remote = 'origin',
   commitMessage,
   gitAuthorInfo,
-  branch = "scaffolder",
+  branch = 'scaffolder',
 }: {
   dir: string;
-  auth: { username: string; password: string } | { token: string };
+  credentialsProvider: AzureDevOpsCredentialsProvider;
   logger: Logger;
   remote?: string;
   commitMessage: string;
@@ -79,18 +81,45 @@ export async function commitAndPushBranch({
   };
 
   const git = Git.fromAuth({
-    ...auth,
+    onAuth: async url => {
+      const credentials = await credentialsProvider.getCredentials({ url });
+
+      logger.info(`Using ${credentials?.type} credentials for ${url}`);
+
+      if (credentials?.type === 'pat') {
+        return { username: "not-empty", password: credentials.token };
+      } else if (credentials?.type === 'bearer') {
+        return {
+          headers: {
+            Authorization: `Bearer ${credentials.token}`,
+          },
+        };
+      }
+
+      throw new InputError(`No token credentials provided for ${url}`);
+    },
     logger,
   });
 
-  const currentBranch = await git.currentBranch({dir})
+  const currentBranch = await git.currentBranch({ dir });
+
+  logger.info(`Current branch is ${currentBranch}`);
+  logger.info(`Target branch is ${branch}`);
 
   if (currentBranch !== branch) {
-    await git.branch({
-      dir,
-      ref: branch,
-    })
-  
+    try {
+      await git.branch({
+        dir,
+        ref: branch,
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AlreadyExistsError") {
+        // we safely ignore this error
+      } else {
+        throw err;
+      }
+    }
+
     await git.checkout({
       dir,
       ref: branch,
@@ -110,9 +139,9 @@ export async function commitAndPushBranch({
   });
 
   await git.push({
-   dir,
-   remote: remote,
-   remoteRef: `refs/heads/${branch}`,
+    dir,
+    remote: remote,
+    remoteRef: `refs/heads/${branch}`,
   });
 }
 
@@ -135,7 +164,7 @@ export async function createADOPullRequest({
   const orgUrl = url + auth.org;
   const token: string = auth.token || ""; // process.env.AZURE_TOKEN || "";
 
-  const authHandler = azdev.getPersonalAccessTokenHandler(token);
+  const authHandler = azdev.getHandlerFromToken(token);
   const connection = new azdev.WebApi(orgUrl, authHandler);
 
   const gitApiObject: GitApi.IGitApi = await connection.getGitApi();

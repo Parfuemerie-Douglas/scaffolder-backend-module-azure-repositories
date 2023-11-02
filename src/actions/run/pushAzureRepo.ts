@@ -15,8 +15,7 @@
  */
 
 import { Config } from "@backstage/config";
-import { InputError } from "@backstage/errors";
-import { ScmIntegrationRegistry } from "@backstage/integration";
+import { DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import { commitAndPushBranch } from "../helpers";
@@ -73,42 +72,17 @@ export const pushAzureRepoAction = (options: {
             type: "string",
             description: "Sets the default author email for the commit.",
           },
-          server: {
-            type: "string",
-            title: "Server hostname",
-            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
-          },
-          token: {
-            title: "Authenticatino Token",
-            type: "string",
-            description: "The token to use for authorization.",
-          },
         },
       },
     },
     async handler(ctx) {
-      const { branch, gitCommitMessage, gitAuthorName, gitAuthorEmail, server } =
+      const { branch, gitCommitMessage, gitAuthorName, gitAuthorEmail } =
         ctx.input;
 
       const sourcePath = getRepoSourceDirectory(
         ctx.workspacePath,
-        ctx.input.sourcePath
+        ctx.input.sourcePath,
       );
-
-      const host = server ?? "dev.azure.com";
-      const integrationConfig = integrations.azure.byHost(host);
-
-      if (!integrationConfig) {
-        throw new InputError(
-          `No matching integration configuration for host ${host}, please check your integrations config`
-        );
-      }
-
-      if (!integrationConfig.config.token && !ctx.input.token) {
-        throw new InputError(`No token provided for Azure Integration ${host}`);
-      }
-
-      const token = ctx.input.token ?? integrationConfig.config.token!;
 
       const gitAuthorInfo = {
         name: gitAuthorName
@@ -121,7 +95,7 @@ export const pushAzureRepoAction = (options: {
 
       await commitAndPushBranch({
         dir: sourcePath,
-        auth: { username: "notempty", password: token },
+        credentialsProvider: DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations),
         logger: ctx.logger,
         commitMessage: gitCommitMessage
           ? gitCommitMessage

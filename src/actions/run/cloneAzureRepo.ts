@@ -16,7 +16,7 @@
 
 import { resolveSafeChildPath } from "@backstage/backend-common";
 import { InputError } from "@backstage/errors";
-import { ScmIntegrationRegistry } from "@backstage/integration";
+import { DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import { cloneRepo } from "../helpers";
@@ -70,29 +70,31 @@ export const cloneAzureRepoAction = (options: {
       },
     },
     async handler(ctx) {
-      const { remoteUrl, branch, server } = ctx.input;
+      const { remoteUrl, branch } = ctx.input;
 
       const targetPath = ctx.input.targetPath ?? "./";
       const outputDir = resolveSafeChildPath(ctx.workspacePath, targetPath);
 
-      const host = server ?? "dev.azure.com";
-      const integrationConfig = integrations.azure.byHost(host);
+      const provider =
+        DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
+      const credentials = await provider.getCredentials({ url: remoteUrl });
 
-      if (!integrationConfig) {
+      let auth: { username: string; password: string } | { token: string };
+      if (ctx.input.token) {
+        auth = { username: "not-empty", password: ctx.input.token };
+      } else if (credentials?.type === "pat") {
+        auth = { username: "not-empty", password: credentials.token };
+      } else if (credentials?.type === "bearer") {
+        auth = { token: credentials.token };
+      } else {
         throw new InputError(
-          `No matching integration configuration for host ${host}, please check your integrations config`
+          `No token credentials provided for Azure repository ${remoteUrl}`,
         );
       }
 
-      if (!integrationConfig.config.token && !ctx.input.token) {
-        throw new InputError(`No token provided for Azure Integration ${host}`);
-      }
-
-      const token = ctx.input.token ?? integrationConfig.config.token!;
-
       await cloneRepo({
         dir: outputDir,
-        auth: { username: "notempty", password: token },
+        auth: auth,
         logger: ctx.logger,
         remoteUrl: remoteUrl,
         branch: branch,
