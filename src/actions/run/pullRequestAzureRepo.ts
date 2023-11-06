@@ -1,4 +1,4 @@
-import {ScmIntegrationRegistry} from "@backstage/integration";
+import {PersonalAccessTokenCredential, ScmIntegrationRegistry} from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 import {InputError} from "@backstage/errors";
 import { createADOPullRequest} from "../helpers";
@@ -98,8 +98,10 @@ export const pullRequestAzureRepoAction = (options: {
           `No matching integration configuration for host ${host}, please check your integrations config`
         );
       }
+      
+      const credential = integrationConfig.config.credentials?.find(credential => credential.kind === "PersonalAccessToken") as PersonalAccessTokenCredential | undefined;
 
-      if (!integrationConfig.config.token && !ctx.input.token) {
+      if (!credential?.personalAccessToken && !integrationConfig.config.token && !ctx.input.token) {
         throw new InputError(`No token provided for Azure Integration ${host}`);
       }
 
@@ -110,7 +112,7 @@ export const pullRequestAzureRepoAction = (options: {
       } as GitInterfaces.GitPullRequest;
 
       const org = ctx.input.organization ?? 'notempty';
-      const token = ctx.input.token ?? integrationConfig.config.token!;
+      const token = ctx.input.token ?? credential?.personalAccessToken ?? integrationConfig.config.token!;
 
       await createADOPullRequest({
         gitPullRequestToCreate: pullRequest,

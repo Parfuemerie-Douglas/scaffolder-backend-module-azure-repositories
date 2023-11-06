@@ -16,7 +16,7 @@
 
 import { Config } from "@backstage/config";
 import { InputError } from "@backstage/errors";
-import { ScmIntegrationRegistry } from "@backstage/integration";
+import { PersonalAccessTokenCredential, ScmIntegrationRegistry } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import { commitAndPushBranch } from "../helpers";
@@ -104,12 +104,14 @@ export const pushAzureRepoAction = (options: {
         );
       }
 
-      if (!integrationConfig.config.token && !ctx.input.token) {
+      const credential = integrationConfig.config.credentials?.find(credential => credential.kind === "PersonalAccessToken") as PersonalAccessTokenCredential | undefined;
+
+      if (!credential?.personalAccessToken && !integrationConfig.config.token && !ctx.input.token) {
         throw new InputError(`No token provided for Azure Integration ${host}`);
       }
 
-      const token = ctx.input.token ?? integrationConfig.config.token!;
-
+      const token = ctx.input.token ?? credential?.personalAccessToken ?? integrationConfig.config.token!;
+      
       const gitAuthorInfo = {
         name: gitAuthorName
           ? gitAuthorName
