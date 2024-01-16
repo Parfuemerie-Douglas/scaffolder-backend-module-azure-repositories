@@ -159,7 +159,7 @@ export async function createADOPullRequest({
   repoId: string;
   project?: string;
   supportsIterations?: boolean;
-}): Promise<void> {
+}): Promise<number> {
   const url = `https://${server}/`;
   const orgUrl = url + auth.org;
   const token: string = auth.token || ""; // process.env.AZURE_TOKEN || "";
@@ -169,5 +169,6 @@ export async function createADOPullRequest({
 
   const gitApiObject: GitApi.IGitApi = await connection.getGitApi();
 
-  await gitApiObject.createPullRequest( gitPullRequestToCreate, repoId, project, supportsIterations );
+  const pr = await gitApiObject.createPullRequest( gitPullRequestToCreate, repoId, project, supportsIterations );
+  return pr.pullRequestId!;
 }

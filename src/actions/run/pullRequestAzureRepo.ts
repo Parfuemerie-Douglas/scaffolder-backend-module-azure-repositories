@@ -82,6 +82,15 @@ export const pullRequestAzureRepoAction = (options: {
             description: 'The token to use for authorization.',
           }
         }
+      },
+      output: {
+        type: 'number',
+        properties: {
+          pullRequestId: {
+            title: 'The ID of the created pull request',
+            type: 'number'
+          }
+        }
       }
     },
     async handler(ctx) {
@@ -108,7 +117,7 @@ export const pullRequestAzureRepoAction = (options: {
         title: title,
       } as GitInterfaces.GitPullRequest;
 
-      await createADOPullRequest({
+      const pullRequestId = await createADOPullRequest({
         gitPullRequestToCreate: pullRequest,
         server: host,
         auth: {
@@ -119,6 +128,8 @@ export const pullRequestAzureRepoAction = (options: {
         project: project,
         supportsIterations: supportsIterations,
       });
+
+      ctx.output("pullRequestId", pullRequestId);
     },
   });
 };
