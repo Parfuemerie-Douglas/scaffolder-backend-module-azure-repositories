@@ -1,4 +1,4 @@
-import {ScmIntegrationRegistry} from "@backstage/integration";
+import {DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry} from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 import {InputError} from "@backstage/errors";
 import { createADOPullRequest} from "../helpers";
@@ -80,7 +80,7 @@ export const pullRequestAzureRepoAction = (options: {
             title: 'Authenticatino Token',
             type: 'string',
             description: 'The token to use for authorization.',
-          },
+          }
         }
       }
     },
@@ -91,16 +91,15 @@ export const pullRequestAzureRepoAction = (options: {
       const targetBranch = `refs/heads/${ctx.input.targetBranch}` ?? `refs/heads/main`;
 
       const host = server ?? "dev.azure.com";
-      const integrationConfig = integrations.azure.byHost(host);
+      const provider = DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
+      const url = `https://${host}/${ctx.input.organization}`;
+      const credentials = await provider.getCredentials({ url: url });
 
-      if (!integrationConfig) {
-        throw new InputError(
-          `No matching integration configuration for host ${host}, please check your integrations config`
-        );
-      }
+      const org = ctx.input.organization ?? "not-empty";
+      const token = ctx.input.token ?? credentials?.token;
 
-      if (!integrationConfig.config.token && !ctx.input.token) {
-        throw new InputError(`No token provided for Azure Integration ${host}`);
+      if (!token) {
+        throw new InputError(`No token credentials provided for ${url}`);
       }
 
       const pullRequest: GitInterfaces.GitPullRequest = {
@@ -109,13 +108,13 @@ export const pullRequestAzureRepoAction = (options: {
         title: title,
       } as GitInterfaces.GitPullRequest;
 
-      const org = ctx.input.organization ?? 'notempty';
-      const token = ctx.input.token ?? integrationConfig.config.token!;
-
       await createADOPullRequest({
         gitPullRequestToCreate: pullRequest,
-        server: server,
-        auth: { org: org, token: token },
+        server: host,
+        auth: {
+          org: org,
+          token: token,
+        },
         repoId: repoId,
         project: project,
         supportsIterations: supportsIterations,
