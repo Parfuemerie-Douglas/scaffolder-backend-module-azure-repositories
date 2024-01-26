@@ -23,6 +23,7 @@ export const pullRequestAzureRepoAction = (options: {
     sourceBranch?: string;
     targetBranch?: string;
     title: string;
+    description?: string;
     repoId: string;
     project?: string;
     supportsIterations?: boolean;
@@ -55,6 +56,11 @@ export const pullRequestAzureRepoAction = (options: {
             title: 'Title',
             description: 'The title of the pull request.',
             type: 'string',
+          },
+          description: {
+            title: 'Description',
+            description: 'The description of the pull request.',
+            type: 'string'
           },
           repoId: {
             title: 'Remote Repo ID',
@@ -107,6 +113,8 @@ export const pullRequestAzureRepoAction = (options: {
       const org = ctx.input.organization ?? "not-empty";
       const token = ctx.input.token ?? credentials?.token;
 
+      const description = ctx.input.description ?? "";
+
       if (!token) {
         throw new InputError(`No token credentials provided for ${url}`);
       }
@@ -115,6 +123,7 @@ export const pullRequestAzureRepoAction = (options: {
         sourceRefName: sourceBranch,
         targetRefName: targetBranch,
         title: title,
+        description: description
       } as GitInterfaces.GitPullRequest;
 
       const pullRequestId = await createADOPullRequest({
