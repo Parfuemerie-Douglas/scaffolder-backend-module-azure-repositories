@@ -159,7 +159,7 @@ export async function createADOPullRequest({
   repoId: string;
   project?: string;
   supportsIterations?: boolean;
-}): Promise<number> {
+}): Promise<GitInterfaces.GitPullRequest> {
   const url = `https://${server}/`;
   const orgUrl = url + auth.org;
   const token: string = auth.token || ""; // process.env.AZURE_TOKEN || "";
@@ -170,5 +170,32 @@ export async function createADOPullRequest({
   const gitApiObject: GitApi.IGitApi = await connection.getGitApi();
 
   const pr = await gitApiObject.createPullRequest( gitPullRequestToCreate, repoId, project, supportsIterations );
-  return pr.pullRequestId!;
+  return pr;
+}
+
+export async function updateADOPullRequest({
+  gitPullRequestToUpdate,
+  server,
+  auth,
+  repoId,
+  project,
+  pullRequestId,
+}:{
+  gitPullRequestToUpdate: GitInterfaces.GitPullRequest;
+  server: string;
+  auth: { org: string; token: string };
+  repoId: string;
+  project?: string;
+  pullRequestId: number;
+}): Promise<void> {
+  const url = `https://${server}/`;
+  const orgUrl = url + auth.org;
+  const token: string = auth.token || ""; // process.env.AZURE_TOKEN || "";
+
+  const authHandler = azdev.getHandlerFromToken(token);
+  const connection = new azdev.WebApi(orgUrl, authHandler);
+
+  const gitApiObject: GitApi.IGitApi = await connection.getGitApi();
+
+  await gitApiObject.updatePullRequest(gitPullRequestToUpdate, repoId, pullRequestId, project);
 }
