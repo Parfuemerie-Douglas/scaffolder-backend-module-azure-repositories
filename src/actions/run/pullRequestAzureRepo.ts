@@ -68,7 +68,7 @@ export const pullRequestAzureRepoAction = (options: {
           },
           supportsIterations: {
             title: 'Supports Iterations',
-            description: 'Whether or not the PR supports interations.',
+            description: 'Whether or not the PR supports iterations.',
             type: 'boolean',
           },
           server: {
@@ -77,7 +77,7 @@ export const pullRequestAzureRepoAction = (options: {
             description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
           },
           token: {
-            title: 'Authenticatino Token',
+            title: 'Authentication Token',
             type: 'string',
             description: 'The token to use for authorization.',
           }
