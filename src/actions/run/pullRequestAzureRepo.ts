@@ -1,7 +1,7 @@
 import {DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry} from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 import {InputError} from "@backstage/errors";
-import { createADOPullRequest} from "../helpers";
+import { createADOPullRequest, updateADOPullRequest} from "../helpers";
 import * as GitInterfaces from "azure-devops-node-api/interfaces/GitInterfaces";
 
 /**
@@ -29,6 +29,7 @@ export const pullRequestAzureRepoAction = (options: {
     supportsIterations?: boolean;
     server: string;
     token?: string;
+    autoComplete?: boolean;
   }>({
     id: 'azure:repo:pr',
     description: 'Create a PR to a repository in Azure DevOps.',
@@ -86,6 +87,11 @@ export const pullRequestAzureRepoAction = (options: {
             title: 'Authentication Token',
             type: 'string',
             description: 'The token to use for authorization.',
+          },
+          autoComplete: {
+            title: 'Enable auto-completion',
+            description: 'Enable auto-completion of the pull request once policies are met',
+            type: 'boolean'
           }
         }
       },
@@ -114,6 +120,7 @@ export const pullRequestAzureRepoAction = (options: {
       const token = ctx.input.token ?? credentials?.token;
 
       const description = ctx.input.description ?? "";
+      const autoComplete = ctx.input.autoComplete ?? false;
 
       if (!token) {
         throw new InputError(`No token credentials provided for ${url}`);
@@ -126,7 +133,7 @@ export const pullRequestAzureRepoAction = (options: {
         description: description
       } as GitInterfaces.GitPullRequest;
 
-      const pullRequestId = await createADOPullRequest({
+      const pullRequestResponse = await createADOPullRequest({
         gitPullRequestToCreate: pullRequest,
         server: host,
         auth: {
@@ -138,7 +145,31 @@ export const pullRequestAzureRepoAction = (options: {
         supportsIterations: supportsIterations,
       });
 
-      ctx.output("pullRequestId", pullRequestId);
+      // this can't be set at creation time, so we have to update the PR to set it
+      if (autoComplete) {
+        const updateProperties = {
+          autoCompleteSetBy: { id: pullRequestResponse.createdBy?.id},
+          // the idea here is that if you want to fire-and-forget the PR by setting autocomplete, you don't also want
+          // the branch to stick around afterwards.  
+          completionOptions: {
+            deleteSourceBranch: true
+          } as GitInterfaces.GitPullRequestCompletionOptions
+        } as GitInterfaces.GitPullRequest
+
+        await updateADOPullRequest({
+          gitPullRequestToUpdate: updateProperties,
+          server: host,
+          auth: {
+            org: org,
+            token: token,
+          },
+          repoId: repoId,
+          project: project,
+          pullRequestId: pullRequestResponse.pullRequestId!
+        });
+      }
+
+      ctx.output("pullRequestId", pullRequestResponse.pullRequestId);
     },
   });
 };
