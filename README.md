@@ -93,7 +93,8 @@ for authorization. The PAT requires `Read` permission for `Code` for the
 integrations:
   azure:
     - host: dev.azure.com
-      token: ${AZURE_TOKEN}
+      credentials:
+        - personalAccessToken: ${AZURE_TOKEN}
 ```
 
 Read more on integrations in Backstage in the [Integrations
