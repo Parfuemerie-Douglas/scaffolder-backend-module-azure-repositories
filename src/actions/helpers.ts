@@ -46,6 +46,12 @@ export async function cloneRepo({
     dir,
   });
 
+  await git.fetch({
+    remote: remote,
+    dir: dir,
+    tags: false
+  });
+
   await git.addRemote({
     dir,
     remote,
