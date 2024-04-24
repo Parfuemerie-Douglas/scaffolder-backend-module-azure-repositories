@@ -24,7 +24,7 @@ You need to configure the actions in your backend:
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @parfuemerie-douglas/scaffolder-backend-module-azure-repositories
+yarn --cwd packages/backend add @parfuemerie-douglas/scaffolder-backend-module-azure-repositories
 ```
 
 Configure the actions (you can check the
@@ -135,6 +135,7 @@ spec:
         repoId: <MY_AZURE_REPOSITORY>
         title: ${{ parameters.name }}
         project: <MY_AZURE_PROJECT>
+        organization: <MY_AZURE_ORGANIZATION>
         supportsIterations: false
 
     - id: register
