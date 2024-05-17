@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-import { resolveSafeChildPath } from "@backstage/backend-common";
+import { resolveSafeChildPath } from "@backstage/backend-plugin-api";
 import { InputError } from "@backstage/errors";
-import { DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
-import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
+import {
+  DefaultAzureDevOpsCredentialsProvider,
+  ScmIntegrationRegistry,
+} from "@backstage/integration";
+import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
 import { cloneRepo } from "../helpers";
 
@@ -59,7 +62,8 @@ export const cloneAzureRepoAction = (options: {
           server: {
             type: "string",
             title: "Server hostname",
-            description: "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
+            description:
+              "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
           },
           token: {
             title: "Authenticatino Token",
@@ -88,7 +92,7 @@ export const cloneAzureRepoAction = (options: {
         auth = { token: credentials.token };
       } else {
         throw new InputError(
-          `No token credentials provided for Azure repository ${remoteUrl}`,
+          `No token credentials provided for Azure repository ${remoteUrl}`
         );
       }
 

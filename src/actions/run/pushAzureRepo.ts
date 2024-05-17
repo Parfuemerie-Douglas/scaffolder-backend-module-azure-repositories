@@ -15,8 +15,11 @@
  */
 
 import { Config } from "@backstage/config";
-import { DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
-import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
+import {
+  DefaultAzureDevOpsCredentialsProvider,
+  ScmIntegrationRegistry,
+} from "@backstage/integration";
+import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
 import { commitAndPushBranch } from "../helpers";
 import { getRepoSourceDirectory } from "../util";
@@ -81,7 +84,7 @@ export const pushAzureRepoAction = (options: {
 
       const sourcePath = getRepoSourceDirectory(
         ctx.workspacePath,
-        ctx.input.sourcePath,
+        ctx.input.sourcePath
       );
 
       const gitAuthorInfo = {
@@ -95,7 +98,8 @@ export const pushAzureRepoAction = (options: {
 
       await commitAndPushBranch({
         dir: sourcePath,
-        credentialsProvider: DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations),
+        credentialsProvider:
+          DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations),
         logger: ctx.logger,
         commitMessage: gitCommitMessage
           ? gitCommitMessage

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { isChildPath } from "@backstage/backend-common";
+import { isChildPath } from "@backstage/cli-common";
 
 import { join as joinPath, normalize as normalizePath } from "path";
 
