@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+export { scaffolderModuleAzureRepositories as default } from './module';
 export * from "./actions";

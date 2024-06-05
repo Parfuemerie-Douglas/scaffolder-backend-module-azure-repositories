@@ -28,56 +28,16 @@ yarn add --cwd packages/backend @parfuemerie-douglas/scaffolder-backend-module-a
 ```
 
 Configure the actions (you can check the
-[docs](https://backstage.io/docs/features/software-templates/writing-custom-actions#registering-custom-actions)
+[docs](https://backstage.io/docs/features/software-templates/writing-custom-actions/#register-action-with-new-backend-system)
 to see all options):
 
 ```typescript
-// packages/backend/src/plugins/scaffolder.ts
+// packages/backend/src/index.ts
+const backend = createBackend();
 
-import { CatalogClient } from '@backstage/catalog-client';
-import { ScmIntegrations } from "@backstage/integration";
+// ...
 
-import {
-  cloneAzureRepoAction,
-  pushAzureRepoAction,
-  pullRequestAzureRepoAction,
-} from "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories";
-
-import { Router } from 'express';
-
-import type { PluginEnvironment } from '../types';
-
-export default async function createPlugin(
-  env: PluginEnvironment,
-): Promise<Router> {
-  const catalogClient = new CatalogClient({
-    discoveryApi: env.discovery,
-  });
-
-const integrations = ScmIntegrations.fromConfig(env.config);
-
-const actions = [
-  cloneAzureRepoAction({ integrations }),
-  pushAzureRepoAction({ integrations, config: env.config }),
-  pullRequestAzureRepoAction({ integrations }),
-  ...createBuiltInActions({
-    containerRunner,
-    catalogClient,
-    integrations,
-    config: env.config,
-    reader: env.reader,
-  }),
-];
-
-return await createRouter({
-  containerRunner,
-  catalogClient,
-  actions,
-  logger: env.logger,
-  config: env.config,
-  database: env.database,
-  reader: env.reader,
-});
+backend.add(import('@parfuemerie-douglas/scaffolder-backend-module-azure-repositories'))
 ```
 
 The Azure repository actions use an [Azure PAT (personal access
