@@ -40,8 +40,7 @@
   "homepage": "https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories#readme",
   "dependencies": {
     "@backstage/backend-common": "^0.22.0",
-    "@backstage/backend-plugin-api": "^0.6.18",
-    "@backstage/cli-common": "^0.1.13",
+    "@backstage/backend-plugin-api": "^0.6.9",
     "@backstage/config": "^1.1.1",
     "@backstage/errors": "^1.2.3",
     "@backstage/integration": "^1.8.0",
