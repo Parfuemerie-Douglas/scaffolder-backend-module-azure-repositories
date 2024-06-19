@@ -44,17 +44,14 @@ export async function cloneRepo({
   await git.clone({
     url: remoteUrl,
     dir,
+    ref: branch,
+    noCheckout: false,
   });
 
   await git.addRemote({
     dir,
     remote,
     url: remoteUrl,
-  });
-
-  await git.checkout({
-    dir,
-    ref: branch,
   });
 }
 
