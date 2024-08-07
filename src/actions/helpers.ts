@@ -18,8 +18,6 @@ import { Logger } from "winston";
 import * as azdev from "azure-devops-node-api";
 import * as GitApi from "azure-devops-node-api/GitApi";
 import * as GitInterfaces from "azure-devops-node-api/interfaces/GitInterfaces";
-import { AzureDevOpsCredentialsProvider } from "@backstage/integration";
-import { InputError } from "@backstage/errors";
 
 export async function cloneRepo({
   dir,
@@ -57,15 +55,15 @@ export async function cloneRepo({
 
 export async function commitAndPushBranch({
   dir,
-  credentialsProvider,
+  auth,
   logger,
-  remote = 'origin',
+  remote = "origin",
   commitMessage,
   gitAuthorInfo,
-  branch = 'scaffolder',
+  branch = "scaffolder",
 }: {
   dir: string;
-  credentialsProvider: AzureDevOpsCredentialsProvider;
+  auth: { username: string; password: string } | { token: string };
   logger: Logger;
   remote?: string;
   commitMessage: string;
@@ -78,23 +76,7 @@ export async function commitAndPushBranch({
   };
 
   const git = Git.fromAuth({
-    onAuth: async url => {
-      const credentials = await credentialsProvider.getCredentials({ url });
-
-      logger.info(`Using ${credentials?.type} credentials for ${url}`);
-
-      if (credentials?.type === 'pat') {
-        return { username: "not-empty", password: credentials.token };
-      } else if (credentials?.type === 'bearer') {
-        return {
-          headers: {
-            Authorization: `Bearer ${credentials.token}`,
-          },
-        };
-      }
-
-      throw new InputError(`No token credentials provided for ${url}`);
-    },
+    ...auth,
     logger,
   });
 
@@ -149,7 +131,7 @@ export async function createADOPullRequest({
   repoId,
   project,
   supportsIterations,
-}:{
+}: {
   gitPullRequestToCreate: GitInterfaces.GitPullRequest;
   server: string;
   auth: { org: string; token: string };
@@ -166,7 +148,12 @@ export async function createADOPullRequest({
 
   const gitApiObject: GitApi.IGitApi = await connection.getGitApi();
 
-  const pr = await gitApiObject.createPullRequest( gitPullRequestToCreate, repoId, project, supportsIterations );
+  const pr = await gitApiObject.createPullRequest(
+    gitPullRequestToCreate,
+    repoId,
+    project,
+    supportsIterations
+  );
   return pr;
 }
 
@@ -177,7 +164,7 @@ export async function updateADOPullRequest({
   repoId,
   project,
   pullRequestId,
-}:{
+}: {
   gitPullRequestToUpdate: GitInterfaces.GitPullRequest;
   server: string;
   auth: { org: string; token: string };
@@ -194,5 +181,10 @@ export async function updateADOPullRequest({
 
   const gitApiObject: GitApi.IGitApi = await connection.getGitApi();
 
-  await gitApiObject.updatePullRequest(gitPullRequestToUpdate, repoId, pullRequestId, project);
+  await gitApiObject.updatePullRequest(
+    gitPullRequestToUpdate,
+    repoId,
+    pullRequestId,
+    project
+  );
 }

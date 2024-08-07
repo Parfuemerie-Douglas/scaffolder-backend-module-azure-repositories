@@ -15,7 +15,11 @@
  */
 
 import { Config } from "@backstage/config";
-import { DefaultAzureDevOpsCredentialsProvider, ScmIntegrationRegistry } from "@backstage/integration";
+import { InputError } from "@backstage/errors";
+import {
+  DefaultAzureDevOpsCredentialsProvider,
+  ScmIntegrationRegistry,
+} from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-backend";
 
 import { commitAndPushBranch } from "../helpers";
@@ -28,6 +32,7 @@ export const pushAzureRepoAction = (options: {
   const { integrations, config } = options;
 
   return createTemplateAction<{
+    remoteUrl: string;
     branch?: string;
     sourcePath?: string;
     gitCommitMessage?: string;
@@ -41,9 +46,14 @@ export const pushAzureRepoAction = (options: {
       "Push the content in the workspace to a remote Azure repository.",
     schema: {
       input: {
-        required: [],
+        required: ["remoteUrl"],
         type: "object",
         properties: {
+          remoteUrl: {
+            title: "Remote URL",
+            type: "string",
+            description: "The Git URL to the repository.",
+          },
           branch: {
             title: "Repository Branch",
             type: "string",
@@ -72,16 +82,26 @@ export const pushAzureRepoAction = (options: {
             type: "string",
             description: "Sets the default author email for the commit.",
           },
+          token: {
+            title: "Authenticatino Token",
+            type: "string",
+            description: "The token to use for authorization.",
+          },
         },
       },
     },
     async handler(ctx) {
-      const { branch, gitCommitMessage, gitAuthorName, gitAuthorEmail } =
-        ctx.input;
+      const {
+        remoteUrl,
+        branch,
+        gitCommitMessage,
+        gitAuthorName,
+        gitAuthorEmail,
+      } = ctx.input;
 
       const sourcePath = getRepoSourceDirectory(
         ctx.workspacePath,
-        ctx.input.sourcePath,
+        ctx.input.sourcePath
       );
 
       const gitAuthorInfo = {
@@ -93,9 +113,26 @@ export const pushAzureRepoAction = (options: {
           : config.getOptionalString("scaffolder.defaultAuthor.email"),
       };
 
+      const provider =
+        DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
+      const credentials = await provider.getCredentials({ url: remoteUrl });
+
+      let auth: { username: string; password: string } | { token: string };
+      if (ctx.input.token) {
+        auth = { username: "not-empty", password: ctx.input.token };
+      } else if (credentials?.type === "pat") {
+        auth = { username: "not-empty", password: credentials.token };
+      } else if (credentials?.type === "bearer") {
+        auth = { token: credentials.token };
+      } else {
+        throw new InputError(
+          `No token credentials provided for Azure repository ${remoteUrl}`
+        );
+      }
+
       await commitAndPushBranch({
         dir: sourcePath,
-        credentialsProvider: DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations),
+        auth: auth,
         logger: ctx.logger,
         commitMessage: gitCommitMessage
           ? gitCommitMessage
