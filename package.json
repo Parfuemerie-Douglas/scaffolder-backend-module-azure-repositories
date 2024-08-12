@@ -1,6 +1,6 @@
 {
   "name": "@parfuemerie-douglas/scaffolder-backend-module-azure-repositories",
-  "version": "0.2.8",
+  "version": "0.4.0",
   "description": "A collection of Backstage scaffolder backend modules for Azure repositories.",
   "main": "dist/index.cjs.js",
   "types": "dist/index.d.ts",
@@ -40,12 +40,12 @@
   "homepage": "https://github.com/Parfuemerie-Douglas/scaffolder-backend-module-azure-repositories#readme",
   "dependencies": {
     "@backstage/backend-common": "^0.22.0",
-    "@backstage/backend-plugin-api": "^0.6.18",
-    "@backstage/cli-common": "^0.1.13",
-    "@backstage/config": "^1.1.1",
+    "@backstage/backend-plugin-api": "^0.7.0",
+    "@backstage/config": "^1.2.0",
     "@backstage/errors": "^1.2.3",
     "@backstage/integration": "^1.8.0",
-    "@backstage/plugin-scaffolder-node": "^0.4.4",
+    "@backstage/plugin-scaffolder-backend": "^1.22.6",
+    "@backstage/plugin-scaffolder-node": "^0.2.9",
     "@backstage/types": "^1.1.1",
     "azure-devops-node-api": "^13.0.0",
     "winston": "^3.2.1"
