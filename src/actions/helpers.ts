@@ -46,6 +46,7 @@ export async function cloneRepo({
     dir,
     ref: branch,
     noCheckout: false,
+    depth: 1,
   });
 
   await git.addRemote({
