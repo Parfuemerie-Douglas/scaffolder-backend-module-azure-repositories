@@ -196,3 +196,20 @@ export async function updateADOPullRequest({
 
   await gitApiObject.updatePullRequest(gitPullRequestToUpdate, repoId, pullRequestId, project);
 }
+
+export function mapMergeStrategy(
+  mergeStrategy?: string,
+): GitInterfaces.GitPullRequestMergeStrategy {
+  switch (mergeStrategy) {
+    case 'noFastForward':
+      return GitInterfaces.GitPullRequestMergeStrategy.NoFastForward;
+    case 'squash':
+      return GitInterfaces.GitPullRequestMergeStrategy.Squash;
+    case 'rebase':
+      return GitInterfaces.GitPullRequestMergeStrategy.Rebase;
+    case 'rebaseMerge':
+      return GitInterfaces.GitPullRequestMergeStrategy.RebaseMerge;
+    default:
+      return GitInterfaces.GitPullRequestMergeStrategy.NoFastForward;
+  }
+}

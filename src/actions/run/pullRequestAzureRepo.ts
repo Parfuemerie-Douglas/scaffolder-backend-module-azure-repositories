@@ -4,7 +4,7 @@ import {
 } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 import { InputError } from "@backstage/errors";
-import { createADOPullRequest, updateADOPullRequest } from "../helpers";
+import { createADOPullRequest, mapMergeStrategy, updateADOPullRequest } from "../helpers";
 import * as GitInterfaces from "azure-devops-node-api/interfaces/GitInterfaces";
 
 /**
@@ -33,6 +33,7 @@ export const pullRequestAzureRepoAction = (options: {
     server: string;
     token?: string;
     autoComplete?: boolean;
+    mergeStrategy?: string;
   }>({
     id: "azure:repo:pr",
     description: "Create a PR to a repository in Azure DevOps.",
@@ -98,6 +99,12 @@ export const pullRequestAzureRepoAction = (options: {
               "Enable auto-completion of the pull request once policies are met",
             type: "boolean",
           },
+          mergeStrategy: {
+            title: "Merge Strategy",
+            description: "The strategy to use when merging the pull request.",
+            type: "string",
+            enum: ["noFastForward", "squash", "rebase", "rebaseMerge"],
+          },
         },
       },
       output: {
@@ -111,7 +118,7 @@ export const pullRequestAzureRepoAction = (options: {
       },
     },
     async handler(ctx) {
-      const { title, repoId, server, project, supportsIterations } = ctx.input;
+      const { title, repoId, server, project, supportsIterations, mergeStrategy } = ctx.input;
 
       const sourceBranch =
         `refs/heads/${ctx.input.sourceBranch}` ?? `refs/heads/scaffolder`;
@@ -161,6 +168,7 @@ export const pullRequestAzureRepoAction = (options: {
           // the branch to stick around afterwards.
           completionOptions: {
             deleteSourceBranch: true,
+            mergeStrategy: mapMergeStrategy(mergeStrategy),
           } as GitInterfaces.GitPullRequestCompletionOptions,
         } as GitInterfaces.GitPullRequest;
 
