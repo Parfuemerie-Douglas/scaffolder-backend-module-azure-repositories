@@ -35,6 +35,8 @@ export const cloneAzureRepoAction = (options: {
     targetPath?: string;
     server: string;
     token?: string;
+    depth?: number;
+    tags?: boolean;
   }>({
     id: "azure:repo:clone",
     description: "Clone an Azure repository into the workspace directory.",
@@ -70,6 +72,16 @@ export const cloneAzureRepoAction = (options: {
             type: "string",
             description: "The token to use for authorization.",
           },
+          depth: {
+            title: "Depth",
+            type: "integer",
+            description: "How much of the git repository's history to retrieve (values smaller than one mean complete history).",
+          },
+          tags: {
+            title: "Tags",
+            type: "boolean",
+            description: "Fetch tags from the remote.",
+          },
         },
       },
     },
@@ -102,6 +114,8 @@ export const cloneAzureRepoAction = (options: {
         logger: ctx.logger,
         remoteUrl: remoteUrl,
         branch: branch,
+        depth: ctx.input.depth,
+        tags: ctx.input.tags,
       });
     },
   });

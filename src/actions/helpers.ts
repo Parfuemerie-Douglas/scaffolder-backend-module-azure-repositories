@@ -28,6 +28,8 @@ export async function cloneRepo({
   remote = "origin",
   remoteUrl,
   branch = "main",
+  depth = undefined,
+  tags = undefined
 }: {
   dir: string;
   auth: { username: string; password: string } | { token: string };
@@ -35,17 +37,33 @@ export async function cloneRepo({
   remote?: string;
   remoteUrl: string;
   branch?: string;
+  depth?: number
+  tags?: boolean
 }): Promise<void> {
   const git = Git.fromAuth({
     ...auth,
     logger,
   });
 
+
+  let realDepth = undefined
+  if (depth === undefined) {
+    realDepth = 1
+  } else if (depth < 1) {
+    /* backstage's wrapper always passes depth to isomorphic-git so there's no way to
+      do a real non-shallow clone with it, hence the maximum value possible in git
+      (https://git-scm.com/docs/shallow) */
+    realDepth = 2147483647
+  } else {
+    realDepth = depth
+  }
+
   await git.clone({
     url: remoteUrl,
     dir,
     ref: branch,
     noCheckout: false,
+    depth: realDepth,
   });
 
   await git.addRemote({
@@ -53,6 +71,12 @@ export async function cloneRepo({
     remote,
     url: remoteUrl,
   });
+
+  /* backstage's wrapper uses singleBranch: true so tag refs are not fetched.
+    if we need the tags a separate fetch is needed after the clone */
+  if (tags) {
+    await git.fetch({ dir, remote, tags: true })
+  }
 }
 
 export async function commitAndPushBranch({
@@ -149,7 +173,7 @@ export async function createADOPullRequest({
   repoId,
   project,
   supportsIterations,
-}:{
+}: {
   gitPullRequestToCreate: GitInterfaces.GitPullRequest;
   server: string;
   auth: { org: string; token: string };
@@ -166,7 +190,7 @@ export async function createADOPullRequest({
 
   const gitApiObject: GitApi.IGitApi = await connection.getGitApi();
 
-  const pr = await gitApiObject.createPullRequest( gitPullRequestToCreate, repoId, project, supportsIterations );
+  const pr = await gitApiObject.createPullRequest(gitPullRequestToCreate, repoId, project, supportsIterations);
   return pr;
 }
 
@@ -177,7 +201,7 @@ export async function updateADOPullRequest({
   repoId,
   project,
   pullRequestId,
-}:{
+}: {
   gitPullRequestToUpdate: GitInterfaces.GitPullRequest;
   server: string;
   auth: { org: string; token: string };
