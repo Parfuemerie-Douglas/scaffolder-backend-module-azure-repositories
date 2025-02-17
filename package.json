@@ -44,6 +44,7 @@
     "@backstage/backend-common": "^0.22.0",
     "@backstage/backend-plugin-api": "^0.7.0",
     "@backstage/cli": "^0.26.11",
+    "@backstage/cli-common": "^0.1.15",
     "@backstage/config": "^1.2.0",
     "@backstage/errors": "^1.2.3",
     "@backstage/integration": "^1.8.0",
@@ -51,6 +52,7 @@
     "@backstage/plugin-scaffolder-node": "^0.2.9",
     "@backstage/types": "^1.1.1",
     "azure-devops-node-api": "^13.0.0",
+    "isomorphic-git": "^1.29.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {},

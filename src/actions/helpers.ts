@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { Git } from "@backstage/backend-common";
+import { AuthCallback, GitAuth } from 'isomorphic-git'
 import { Logger } from "winston";
 import * as azdev from "azure-devops-node-api";
 import * as GitApi from "azure-devops-node-api/GitApi";
@@ -23,21 +24,21 @@ import { InputError } from "@backstage/errors";
 
 export async function cloneRepo({
   dir,
-  auth,
+  onAuth,
   logger,
   remote = "origin",
   remoteUrl,
   branch = "main",
 }: {
   dir: string;
-  auth: { username: string; password: string } | { token: string };
+  onAuth: AuthCallback;
   logger: Logger;
   remote?: string;
   remoteUrl: string;
   branch?: string;
 }): Promise<void> {
   const git = Git.fromAuth({
-    ...auth,
+    onAuth: onAuth,
     logger,
   });
 
@@ -57,7 +58,7 @@ export async function cloneRepo({
 
 export async function commitAndPushBranch({
   dir,
-  credentialsProvider,
+  onAuth,
   logger,
   remote = 'origin',
   commitMessage,
@@ -65,7 +66,7 @@ export async function commitAndPushBranch({
   branch = 'scaffolder',
 }: {
   dir: string;
-  credentialsProvider: AzureDevOpsCredentialsProvider;
+  onAuth: AuthCallback;
   logger: Logger;
   remote?: string;
   commitMessage: string;
@@ -78,23 +79,7 @@ export async function commitAndPushBranch({
   };
 
   const git = Git.fromAuth({
-    onAuth: async url => {
-      const credentials = await credentialsProvider.getCredentials({ url });
-
-      logger.info(`Using ${credentials?.type} credentials for ${url}`);
-
-      if (credentials?.type === 'pat') {
-        return { username: "not-empty", password: credentials.token };
-      } else if (credentials?.type === 'bearer') {
-        return {
-          headers: {
-            Authorization: `Bearer ${credentials.token}`,
-          },
-        };
-      }
-
-      throw new InputError(`No token credentials provided for ${url}`);
-    },
+    onAuth: onAuth,
     logger,
   });
 
@@ -168,6 +153,31 @@ export async function createADOPullRequest({
 
   const pr = await gitApiObject.createPullRequest( gitPullRequestToCreate, repoId, project, supportsIterations );
   return pr;
+}
+
+export function onAuthFromCredentials(logger: Logger, provider: AzureDevOpsCredentialsProvider, token?: string): (url: string) => Promise<GitAuth> {
+  return async (url: string) => {
+    const credentials = await provider.getCredentials({ url: url });
+
+    if (token) {
+      logger.info(`Using provided pat for ${url}`);
+      return { username: "not-empty", password: token };
+    } else if (credentials?.type === "pat") {
+      logger.info(`Using ${credentials?.type} credentials for ${url}`);
+      return { username: "not-empty", password: credentials.token };
+    } else if (credentials?.type === "bearer") {
+      logger.info(`Using ${credentials?.type} credentials for ${url}`);
+      return {
+        headers: {
+          Authorization: `Bearer ${credentials.token}`,
+        },
+      };
+    }
+
+    throw new InputError(
+      `No token credentials provided for Azure repository ${url}`
+    );
+  }
 }
 
 export async function updateADOPullRequest({

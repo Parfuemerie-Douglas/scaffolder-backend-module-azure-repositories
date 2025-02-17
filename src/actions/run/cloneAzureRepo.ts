@@ -15,14 +15,13 @@
  */
 
 import { resolveSafeChildPath } from "@backstage/backend-plugin-api";
-import { InputError } from "@backstage/errors";
 import {
   DefaultAzureDevOpsCredentialsProvider,
   ScmIntegrationRegistry,
 } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
-import { cloneRepo } from "../helpers";
+import { cloneRepo, onAuthFromCredentials } from "../helpers";
 
 export const cloneAzureRepoAction = (options: {
   integrations: ScmIntegrationRegistry;
@@ -81,24 +80,10 @@ export const cloneAzureRepoAction = (options: {
 
       const provider =
         DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
-      const credentials = await provider.getCredentials({ url: remoteUrl });
-
-      let auth: { username: string; password: string } | { token: string };
-      if (ctx.input.token) {
-        auth = { username: "not-empty", password: ctx.input.token };
-      } else if (credentials?.type === "pat") {
-        auth = { username: "not-empty", password: credentials.token };
-      } else if (credentials?.type === "bearer") {
-        auth = { token: credentials.token };
-      } else {
-        throw new InputError(
-          `No token credentials provided for Azure repository ${remoteUrl}`
-        );
-      }
 
       await cloneRepo({
         dir: outputDir,
-        auth: auth,
+        onAuth: onAuthFromCredentials(ctx.logger, provider, ctx.input.token),
         logger: ctx.logger,
         remoteUrl: remoteUrl,
         branch: branch,

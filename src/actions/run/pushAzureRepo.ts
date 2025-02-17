@@ -21,7 +21,7 @@ import {
 } from "@backstage/integration";
 import { createTemplateAction } from "@backstage/plugin-scaffolder-node";
 
-import { commitAndPushBranch } from "../helpers";
+import { commitAndPushBranch, onAuthFromCredentials } from "../helpers";
 import { getRepoSourceDirectory } from "../util";
 
 export const pushAzureRepoAction = (options: {
@@ -75,6 +75,17 @@ export const pushAzureRepoAction = (options: {
             type: "string",
             description: "Sets the default author email for the commit.",
           },
+          server: {
+            type: "string",
+            title: "Server hostname",
+            description:
+              "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
+          },
+          token: {
+            title: "Authenticatino Token",
+            type: "string",
+            description: "The token to use for authorization.",
+          },
         },
       },
     },
@@ -96,15 +107,18 @@ export const pushAzureRepoAction = (options: {
           : config.getOptionalString("scaffolder.defaultAuthor.email"),
       };
 
+      const provider =
+        DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations);
+
       await commitAndPushBranch({
         dir: sourcePath,
-        credentialsProvider:
-          DefaultAzureDevOpsCredentialsProvider.fromIntegrations(integrations),
+        onAuth:
+          onAuthFromCredentials(ctx.logger, provider, ctx.input.token),
         logger: ctx.logger,
         commitMessage: gitCommitMessage
           ? gitCommitMessage
           : config.getOptionalString("scaffolder.defaultCommitMessage") ||
-            "Initial commit",
+          "Initial commit",
         gitAuthorInfo,
         branch,
       });
