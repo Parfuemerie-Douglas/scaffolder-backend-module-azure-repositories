@@ -66,7 +66,7 @@ export const cloneAzureRepoAction = (options: {
               "The hostname of the Azure DevOps service. Defaults to dev.azure.com",
           },
           token: {
-            title: "Authenticatino Token",
+            title: "Authentication Token",
             type: "string",
             description: "The token to use for authorization.",
           },

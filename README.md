@@ -156,10 +156,10 @@ spec:
 
 Replace `<MY_AZURE_ORGANIZATION>` with the name of your Azure DevOps
 organization, `<MY_AZURE_PROJECT>` with the name of your Azure DevOps project,
-`<MY_AZURE_REPOSITORY_BRANCH` with the name of the desired Azure DevOps repository branch,
+`<MY_AZURE_REPOSITORY_BRANCH>` with the name of the desired Azure DevOps repository branch,
 and `<MY_AZURE_REPOSITORY>` with the name of your Azure DevOps repository.
 
 NOTE: You will not be able to register the Pull Request since the file will not exist from the main branch!
 
-You can find a list of all registred actions including their parameters at the
+You can find a list of all registered actions including their parameters at the
 `/create/actions` route in your Backstage application.
